@@ -85,6 +85,31 @@ export const Posts: CollectionConfig<'posts'> = {
               relationTo: 'media',
             },
             {
+              name: 'projectLinks',
+              type: 'group',
+              admin: {
+                description: 'Links to the live project and source code',
+              },
+              fields: [
+                {
+                  name: 'liveSiteUrl',
+                  type: 'text',
+                  label: 'Live Site URL',
+                  admin: {
+                    description: 'URL to the live project',
+                  },
+                },
+                {
+                  name: 'githubUrl',
+                  type: 'text',
+                  label: 'GitHub Repository URL',
+                  admin: {
+                    description: "URL to the project's GitHub repository",
+                  },
+                },
+              ],
+            },
+            {
               name: 'content',
               type: 'richText',
               editor: lexicalEditor({

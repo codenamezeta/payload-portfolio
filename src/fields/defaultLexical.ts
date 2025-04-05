@@ -1,20 +1,51 @@
 import type { TextFieldSingleValidation } from 'payload'
 import {
+  // Basic formatting
+  ParagraphFeature,
+  HeadingFeature,
   BoldFeature,
   ItalicFeature,
-  LinkFeature,
-  ParagraphFeature,
-  lexicalEditor,
   UnderlineFeature,
+  StrikethroughFeature,
+
+  // Lists
+  OrderedListFeature,
+  UnorderedListFeature,
+  ChecklistFeature,
+  BlockquoteFeature,
+
+  // Links and media
+  LinkFeature,
+  RelationshipFeature,
+  UploadFeature,
+
+  // Advanced formatting
+  IndentFeature,
+  AlignFeature,
+  lexicalEditor,
   type LinkFields,
 } from '@payloadcms/richtext-lexical'
 
 export const defaultLexical = lexicalEditor({
   features: [
+    // Basic formatting
     ParagraphFeature(),
-    UnderlineFeature(),
+    HeadingFeature({
+      enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+    }),
     BoldFeature(),
     ItalicFeature(),
+    UnderlineFeature(),
+    StrikethroughFeature(),
+
+    // Lists
+    UnorderedListFeature(),
+    OrderedListFeature(),
+    ChecklistFeature(),
+
+    BlockquoteFeature(),
+
+    // Links
     LinkFeature({
       enabledCollections: ['pages', 'posts'],
       fields: ({ defaultFields }) => {
@@ -43,5 +74,25 @@ export const defaultLexical = lexicalEditor({
         ]
       },
     }),
+
+    // Media
+    UploadFeature({
+      collections: {
+        media: {
+          fields: [
+            // Additional fields for uploads if needed
+          ],
+        },
+      },
+    }),
+
+    // Advanced formatting
+    AlignFeature(),
+    IndentFeature(),
+
+    // Relationships (uncomment if needed)
+    // RelationshipFeature({
+    //   collections: ['pages', 'posts'],
+    // }),
   ],
 })

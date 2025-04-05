@@ -6,6 +6,9 @@ import type { Post } from '@/payload-types'
 import { Media } from '@/components/Media'
 import { formatAuthors } from '@/utilities/formatAuthors'
 
+import { buttonVariants } from '@/components/ui/button'
+import Link from 'next/link'
+
 export const PostHero: React.FC<{
   post: Post
 }> = ({ post }) => {
@@ -60,6 +63,31 @@ export const PostHero: React.FC<{
               </div>
             )}
           </div>
+          {(post.projectLinks?.liveSiteUrl || post.projectLinks?.githubUrl) && (
+            <div className="flex flex-wrap gap-3 mt-4">
+              {post.projectLinks?.liveSiteUrl && (
+                <Link
+                  href={post.projectLinks.liveSiteUrl}
+                  className={buttonVariants({ variant: 'default' })}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <span className="mr-2">🚀</span> View Live Project
+                </Link>
+              )}
+
+              {post.projectLinks?.githubUrl && (
+                <Link
+                  href={post.projectLinks.githubUrl}
+                  className={buttonVariants({ variant: 'outline' })}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <span className="mr-2">💻</span> View Source Code
+                </Link>
+              )}
+            </div>
+          )}
         </div>
       </div>
       <div className="min-h-[80vh] select-none">
