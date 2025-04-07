@@ -4,17 +4,19 @@ import useClickableCard from '@/utilities/useClickableCard'
 import Link from 'next/link'
 import React, { Fragment } from 'react'
 
-import type { Post } from '@/payload-types'
+import type { PortfolioItem, Post } from '@/payload-types'
 
 import { Media } from '@/components/Media'
 
-export type CardPostData = Pick<Post, 'slug' | 'categories' | 'meta' | 'title'>
+export type CardPostData =
+  | Pick<Post, 'slug' | 'categories' | 'meta' | 'title'>
+  | Pick<PortfolioItem, 'slug' | 'categories' | 'meta' | 'title'>
 
 export const Card: React.FC<{
   alignItems?: 'center'
   className?: string
   doc?: CardPostData
-  relationTo?: 'posts'
+  relationTo?: 'posts' | 'portfolio'
   showCategories?: boolean
   title?: string
 }> = (props) => {
@@ -23,6 +25,12 @@ export const Card: React.FC<{
 
   const { slug, categories, meta, title } = doc || {}
   const { description, image: metaImage } = meta || {}
+
+  // Get technologies directly from doc (it's a top-level property in PortfolioItem)
+  const technologies =
+    relationTo === 'portfolio' && 'technologies' in (doc || {})
+      ? (doc as PortfolioItem).technologies
+      : undefined
 
   const hasCategories = categories && Array.isArray(categories) && categories.length > 0
   const titleToUse = titleFromProps || title
@@ -79,6 +87,25 @@ export const Card: React.FC<{
         )}
         {description && <div className="mt-2">{description && <p>{sanitizedDescription}</p>}</div>}
       </div>
+      {technologies && (
+        <div className="flex flex-wrap gap-2 p-4 justify-start">
+          {technologies.map((tech, index) => {
+            // Each technology is an object with a 'technology' property
+            const technologyText = tech.technology || ''
+            // const isLast = index === technologies.length - 1
+
+            return (
+              <span
+                key={index}
+                className="text-sm text-gray-500 bg-gray-300 rounded-full px-2 py-1"
+              >
+                {technologyText}
+                {/* {!isLast && <Fragment>, &nbsp;</Fragment>} */}
+              </span>
+            )
+          })}
+        </div>
+      )}
     </article>
   )
 }

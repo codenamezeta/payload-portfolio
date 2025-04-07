@@ -8,8 +8,10 @@ import { Banner } from '../../blocks/Banner/config'
 import { Code } from '../../blocks/Code/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
-import { populateAuthors } from './hooks/populateAuthors'
-import { revalidateDelete, revalidatePost } from './hooks/revalidatePost'
+import {
+  revalidateDeletePortfolioItem,
+  revalidatePortfolioItem,
+} from './hooks/revalidatePortfolioItem'
 
 import {
   MetaDescriptionField,
@@ -24,25 +26,32 @@ import { CallToAction } from '@/blocks/CallToAction/config'
 // import { RelatedPosts } from '@/blocks/RelatedPosts/Component'
 // import { FormBlock } from '@/blocks/Form/Component'
 
-export const Posts: CollectionConfig<'posts'> = {
-  slug: 'posts',
+export const Portfolio: CollectionConfig<'portfolio'> = {
+  slug: 'portfolio',
   access: {
     create: authenticated,
     delete: authenticated,
     read: authenticatedOrPublished,
     update: authenticated,
   },
+
   // This config controls what's populated by default when a post is referenced
   // https://payloadcms.com/docs/queries/select#defaultpopulate-collection-config-property
   // Type safe if the collection slug generic is passed to `CollectionConfig` - `CollectionConfig<'posts'>
   defaultPopulate: {
     title: true,
     slug: true,
-    categories: true,
     meta: {
       image: true,
       description: true,
     },
+  },
+  typescript: {
+    interface: 'PortfolioItem', // <--- THIS LINE IS KEY
+  },
+  labels: {
+    singular: 'Portfolio Item', // What a single document is called
+    plural: 'Portfolio', // How the collection is labelled in the nav
   },
   admin: {
     defaultColumns: ['title', 'slug', 'updatedAt'],
@@ -50,7 +59,7 @@ export const Posts: CollectionConfig<'posts'> = {
       url: ({ data, req }) => {
         const path = generatePreviewPath({
           slug: typeof data?.slug === 'string' ? data.slug : '',
-          collection: 'posts',
+          collection: 'portfolio',
           req,
         })
 
@@ -60,7 +69,7 @@ export const Posts: CollectionConfig<'posts'> = {
     preview: (data, { req }) =>
       generatePreviewPath({
         slug: typeof data?.slug === 'string' ? data.slug : '',
-        collection: 'posts',
+        collection: 'portfolio',
         req,
       }),
     useAsTitle: 'title',
@@ -72,9 +81,22 @@ export const Posts: CollectionConfig<'posts'> = {
       required: true,
     },
     {
+      name: 'projectType',
+      type: 'select',
+      options: [
+        { label: 'Website', value: 'Website' },
+        { label: 'Mobile App', value: 'Mobile App' },
+        { label: 'Design Project', value: 'Design' },
+        { label: 'Media Design', value: 'Media' },
+        { label: 'Other', value: 'Other' },
+      ],
+      required: true,
+    },
+    {
       type: 'tabs',
       tabs: [
         {
+          label: 'Content',
           fields: [
             {
               name: 'heroImage',
@@ -88,21 +110,71 @@ export const Posts: CollectionConfig<'posts'> = {
                 features: ({ defaultFeatures }) => {
                   return [
                     ...defaultFeatures,
-                    BlocksFeature({
-                      blocks: [Banner, Code, MediaBlock, CallToAction],
-                    }),
                     FixedToolbarFeature(),
+                    BlocksFeature({
+                      blocks: [
+                        Banner,
+                        Code,
+                        MediaBlock,
+                        CallToAction,
+                        // Add any other block types you want to use
+                      ],
+                    }),
                   ]
                 },
               }),
               label: false,
               required: true,
             },
+            {
+              name: 'technologies',
+              type: 'array',
+              fields: [
+                {
+                  name: 'technology',
+                  type: 'text',
+                },
+              ],
+            },
           ],
-          label: 'Content',
         },
         {
+          label: 'Meta',
           fields: [
+            {
+              name: 'projectLinks',
+              type: 'group',
+              admin: {
+                description: 'Links to the live project and source code',
+              },
+              fields: [
+                {
+                  name: 'liveSiteUrl',
+                  type: 'text',
+                  label: 'Live Site URL',
+                  admin: {
+                    description: 'URL to the live project',
+                  },
+                },
+                {
+                  name: 'githubUrl',
+                  type: 'text',
+                  label: 'GitHub Repository URL',
+                  admin: {
+                    description: "URL to the project's GitHub repository",
+                  },
+                },
+              ],
+            },
+            {
+              name: 'categories',
+              type: 'relationship',
+              hasMany: true,
+              relationTo: 'categories',
+              admin: {
+                description: 'Categories to help organize your portfolio items',
+              },
+            },
             {
               name: 'relatedPosts',
               type: 'relationship',
@@ -119,17 +191,7 @@ export const Posts: CollectionConfig<'posts'> = {
               hasMany: true,
               relationTo: 'posts',
             },
-            {
-              name: 'categories',
-              type: 'relationship',
-              admin: {
-                position: 'sidebar',
-              },
-              hasMany: true,
-              relationTo: 'categories',
-            },
           ],
-          label: 'Meta',
         },
         {
           name: 'meta',
@@ -216,9 +278,8 @@ export const Posts: CollectionConfig<'posts'> = {
     ...slugField(),
   ],
   hooks: {
-    afterChange: [revalidatePost],
-    afterRead: [populateAuthors],
-    afterDelete: [revalidateDelete],
+    afterChange: [revalidatePortfolioItem],
+    afterDelete: [revalidateDeletePortfolioItem],
   },
   versions: {
     drafts: {

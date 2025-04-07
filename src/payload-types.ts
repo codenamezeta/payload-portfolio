@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     pages: Page;
     posts: Post;
+    portfolio: PortfolioItem;
     media: Media;
     categories: Category;
     users: User;
@@ -85,6 +86,7 @@ export interface Config {
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    portfolio: PortfolioSelect<false> | PortfolioSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -215,19 +217,6 @@ export interface Post {
   id: number;
   title: string;
   heroImage?: (number | null) | Media;
-  /**
-   * Links to the live project and source code
-   */
-  projectLinks?: {
-    /**
-     * URL to the live project
-     */
-    liveSiteUrl?: string | null;
-    /**
-     * URL to the project's GitHub repository
-     */
-    githubUrl?: string | null;
-  };
   content: {
     root: {
       type: string;
@@ -527,18 +516,94 @@ export interface ArchiveBlock {
     [k: string]: unknown;
   } | null;
   populateBy?: ('collection' | 'selection') | null;
-  relationTo?: 'posts' | null;
+  relationTo?: ('posts' | 'portfolio') | null;
   categories?: (number | Category)[] | null;
   limit?: number | null;
   selectedDocs?:
-    | {
-        relationTo: 'posts';
-        value: number | Post;
-      }[]
+    | (
+        | {
+            relationTo: 'posts';
+            value: number | Post;
+          }
+        | {
+            relationTo: 'portfolio';
+            value: number | PortfolioItem;
+          }
+      )[]
     | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'archive';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "portfolio".
+ */
+export interface PortfolioItem {
+  id: number;
+  title: string;
+  projectType: 'Website' | 'Mobile App' | 'Design' | 'Media' | 'Other';
+  heroImage?: (number | null) | Media;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  technologies?:
+    | {
+        technology?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Links to the live project and source code
+   */
+  projectLinks?: {
+    /**
+     * URL to the live project
+     */
+    liveSiteUrl?: string | null;
+    /**
+     * URL to the project's GitHub repository
+     */
+    githubUrl?: string | null;
+  };
+  /**
+   * Categories to help organize your portfolio items
+   */
+  categories?: (number | Category)[] | null;
+  relatedPosts?: (number | Post)[] | null;
+  meta?: {
+    title?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    description?: string | null;
+  };
+  publishedAt?: string | null;
+  authors?: (number | User)[] | null;
+  populatedAuthors?:
+    | {
+        id?: string | null;
+        name?: string | null;
+      }[]
+    | null;
+  slug?: string | null;
+  slugLock?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -921,6 +986,10 @@ export interface PayloadLockedDocument {
         value: number | Post;
       } | null)
     | ({
+        relationTo: 'portfolio';
+        value: number | PortfolioItem;
+      } | null)
+    | ({
         relationTo: 'media';
         value: number | Media;
       } | null)
@@ -1136,15 +1205,53 @@ export interface FormBlockSelect<T extends boolean = true> {
 export interface PostsSelect<T extends boolean = true> {
   title?: T;
   heroImage?: T;
+  content?: T;
+  relatedPosts?: T;
+  categories?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+      };
+  publishedAt?: T;
+  authors?: T;
+  populatedAuthors?:
+    | T
+    | {
+        id?: T;
+        name?: T;
+      };
+  slug?: T;
+  slugLock?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "portfolio_select".
+ */
+export interface PortfolioSelect<T extends boolean = true> {
+  title?: T;
+  projectType?: T;
+  heroImage?: T;
+  content?: T;
+  technologies?:
+    | T
+    | {
+        technology?: T;
+        id?: T;
+      };
   projectLinks?:
     | T
     | {
         liveSiteUrl?: T;
         githubUrl?: T;
       };
-  content?: T;
-  relatedPosts?: T;
   categories?: T;
+  relatedPosts?: T;
   meta?:
     | T
     | {
@@ -1669,6 +1776,10 @@ export interface TaskSchedulePublish {
       | ({
           relationTo: 'posts';
           value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'portfolio';
+          value: number | PortfolioItem;
         } | null);
     global?: string | null;
     user?: (number | null) | User;

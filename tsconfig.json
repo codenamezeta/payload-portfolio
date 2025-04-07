@@ -34,15 +34,13 @@
       "@payload-config": [
         "./src/payload.config.ts"
       ],
-      "react": [
-        "./node_modules/@types/react"
-      ],
       "@/*": [
         "./src/*"
       ],
     }
   },
   "include": [
+    "src/payload.config.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",

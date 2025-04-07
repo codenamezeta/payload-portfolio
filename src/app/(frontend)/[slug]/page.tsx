@@ -5,13 +5,14 @@ import configPromise from '@payload-config'
 import { getPayload, type RequiredDataFromCollectionSlug } from 'payload'
 import { draftMode } from 'next/headers'
 import React, { cache } from 'react'
-import { homeStatic } from '@/endpoints/seed/home-static'
 
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
 import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
+
+import PortfolioViewer from '@/components/PortfolioViewer'
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config: configPromise })
@@ -54,11 +55,6 @@ export default async function Page({ params: paramsPromise }: Args) {
     slug,
   })
 
-  // Remove this code once your website is seeded
-  if (!page && slug === 'home') {
-    page = homeStatic
-  }
-
   if (!page) {
     return <PayloadRedirects url={url} />
   }
@@ -74,6 +70,15 @@ export default async function Page({ params: paramsPromise }: Args) {
       {draft && <LivePreviewListener />}
 
       <RenderHero {...hero} />
+      {slug === 'home' && (
+        <div className="container my-16">
+          <h2 className="font-bold text-3xl">Portfolio</h2>
+          <p className="text-foreground mb-4">
+            Here are some of my recent projects. Click on any project to view more details.
+          </p>
+          <PortfolioViewer />
+        </div>
+      )}
       <RenderBlocks blocks={layout} />
     </article>
   )
