@@ -77,9 +77,8 @@ export default buildConfig({
     vercelBlobStorage({
       collections: {
         media: {
-          generateFileURL: ({ filename }) => {
-            return `//${process.env.NEXT_PUBLIC_VERCEL_BLOB_URL}/${filename}`
-          },
+          generateFileURL: ({ filename }) =>
+            `${process.env.NEXT_PUBLIC_VERCEL_BLOB_URL}/${filename}`,
         },
       },
       token: process.env.BLOB_READ_WRITE_TOKEN,
